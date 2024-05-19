@@ -33,7 +33,7 @@ export default function LoginForm() {
             </div>
 
             <div className="mt-10 text-center">
-                <p className="mb-0 text-slate-500 dark:text-zink-200">Don't have an account? <Link href="/register" className="font-semibold underline transition-all duration-150 ease-linear text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500">Register</Link> </p>
+                <p className="mb-0 text-slate-500 dark:text-zink-200">Don&apos;t have an account? <Link href="/register" className="font-semibold underline transition-all duration-150 ease-linear text-slate-500 dark:text-zink-200 hover:text-custom-500 dark:hover:text-custom-500">Register</Link> </p>
             </div>
         </form>
     )
