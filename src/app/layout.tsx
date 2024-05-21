@@ -18,10 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={rubik.className}>
-        <div className="w-screen">
-          <BBNavbar/>
+        <div className="min-h-screen">
+          <div className="w-screen">
+            <BBNavbar/>
+          </div>
+          {children}
         </div>
-        {children}
       </body>
     </html>
   );
