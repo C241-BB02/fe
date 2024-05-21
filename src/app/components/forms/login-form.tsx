@@ -5,7 +5,7 @@ import Link from "next/link";
 export default function LoginForm() {
     const handleSubmit = (event: any) => {
         event.preventDefault();
-        console.log("Form submitted!"); // You can handle form submission logic here
+        console.log("Form submitted!");
     };
       
     return (

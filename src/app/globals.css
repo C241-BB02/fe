@@ -47,6 +47,10 @@ body {
   padding: 0.25rem;
 }
 
+.bg-hero {
+  background: radial-gradient(50% 50% at 50% 50%, #d6edff 0%, #BBDEFB 85.62%);
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
