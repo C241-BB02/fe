@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Rubik } from "next/font/google";
 import "./globals.css";
 import BBNavbar from "./components/navigation/navbar";
+import { AuthProvider } from "@/context/AuthContext";
 
 const rubik = Rubik({ subsets: ["latin"] });
 
@@ -18,12 +19,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={rubik.className}>
-        <div className="min-h-screen">
-          <div className="w-screen">
-            <BBNavbar/>
+        <AuthProvider>
+          <div className="min-h-screen">
+            <div className="w-screen">
+              <BBNavbar/>
+            </div>
+            {children}
           </div>
-          {children}
-        </div>
+        </AuthProvider>
       </body>
     </html>
   );

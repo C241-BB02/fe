@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
 import colors from 'tailwindcss/colors';
 
+import { nextui } from "@nextui-org/react";
+
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -259,6 +261,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [nextui()],
 };
 export default config;
