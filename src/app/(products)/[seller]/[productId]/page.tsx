@@ -2,7 +2,7 @@ import { Avatar } from '@nextui-org/react';
 import { ShoppingCart, Star } from 'lucide-react';
 import Image from 'next/image';
 
-export default async function ProductDetails({ params }: { params: { seller: string, productId: string } }) {
+export default async function ProductDetails({ params }: Readonly<{ params: { seller: string, productId: string } }>) {
     const res = await fetch(`https://dummyjson.com/products/${params.productId}`);
     const product = await res.json();
 
@@ -20,10 +20,7 @@ export default async function ProductDetails({ params }: { params: { seller: str
                         <Star fill="#EAB305" strokeWidth={0} />{product.rating}
                     </div>
                 </div>
-                <div className='text-2xl font-medium py-2'>${product.price}</div>
-                <button className="mb-8 px-4 py-2 mt-4 text-white bg-custom-800 rounded-3xl hover:bg-custom-900 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20">
-                    <ShoppingCart className="inline-block size-4 leading-none mr-2" /><span className="align-middle">Add to cart</span>
-                </button>
+                <div className='text-2xl font-medium py-2 mb-4'>${product.price}</div>
                 <div className='border-t border-gray'></div>
                 <div className='rounded-lg py-2 pr-3 w-fit flex items-center gap-3'>
                     <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />

@@ -3,16 +3,34 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
+export interface JwtPayload {
+  exp: number,
+  iat: number,
+  jti: string,
+  role: string,
+  token_type: string,
+  user_id: number
+}
+
 interface UserData {
+  id: number;
   username: string;
   role: string;
   accessToken: string;
   refreshToken: string;
 }
 
+// TODO: use enum for user role
+export enum UserRole {
+  Admin = "ADMIN",
+  Seller = "SELLER",
+  Customer = "CUSTOMER",
+  Guest = "GUEST",
+}
+
 interface AuthContextType {
   user: UserData;
-  login: (username: string, role: string, accessToken: string, refreshToken: string) => void;
+  login: (id: number, username: string, role: string, accessToken: string, refreshToken: string) => void;
   logout: () => void;
 }
 
@@ -29,8 +47,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (username: string, role: string, accessToken: string, refreshToken: string) => {
-    const user = { username, role, accessToken, refreshToken };
+  const login = (id: number, username: string, role: string, accessToken: string, refreshToken: string) => {
+    const user = { id, username, role, accessToken, refreshToken };
     localStorage.setItem('user', JSON.stringify(user));
     setUser(user);
   };
@@ -42,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user: user || { username: '', role: 'GUEST', accessToken: '', refreshToken: '' }, login, logout }}>
+    <AuthContext.Provider value={{ user: user || { id: -1, username: '', role: 'GUEST', accessToken: '', refreshToken: '' }, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

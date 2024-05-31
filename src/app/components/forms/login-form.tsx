@@ -1,6 +1,7 @@
 'use client';
 
-import { useAuth } from "@/context/AuthContext";
+import { JwtPayload, useAuth } from "@/context/AuthContext";
+import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -31,7 +32,9 @@ export default function LoginForm() {
             if (response.ok) {
                 const data = await response.json();
                 console.log("Login successful!", data);
-                login(formData.username, data.role, data.access_token, data.refresh_token);
+                const tokenClaims = jwtDecode<JwtPayload>(data.access);
+                
+                login(tokenClaims.user_id, formData.username, data.role, data.access, data.refresh);
                 router.push('/');
             } else {
                 console.error("Login failed.");

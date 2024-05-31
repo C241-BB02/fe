@@ -2,13 +2,11 @@
 
 import React from "react";
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar, Divider, DropdownSection, User } from "@nextui-org/react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { UserRole, useAuth } from "@/context/AuthContext";
 
 export default function BBNavbar() {
   const { user, logout } = useAuth();
   const profileUrlBase = "https://avatar.iran.liara.run/username?username="
-  const router = useRouter();
 
   return (
     <Navbar className="bg-custom-100" maxWidth="xl">
@@ -17,7 +15,7 @@ export default function BBNavbar() {
       </NavbarBrand>
 
       <NavbarContent justify="end" className="text-custom-900">
-        {user.role == "GUEST" &&
+        {user.role == UserRole.Guest &&
           <>
             <NavbarItem className="hidden lg:flex">
               <Link href="/login">Login</Link>
@@ -34,11 +32,13 @@ export default function BBNavbar() {
             </NavbarItem>
           </>
         }
-        {user.role !== "GUEST" &&
+        {user.role !== UserRole.Guest &&
           <>
-            <NavbarItem className="hidden lg:flex">
-              <Link href="/login">Login</Link>
-            </NavbarItem>
+            {user.role == UserRole.Seller && 
+              <NavbarItem className="hidden md:flex">
+                <Link href="/my-listings">My Listings</Link>
+              </NavbarItem>
+            }
             <Dropdown placement="bottom-end">
               <DropdownTrigger>
                 <Avatar

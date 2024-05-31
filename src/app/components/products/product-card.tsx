@@ -1,5 +1,8 @@
-import { ShoppingCart, Star, StarHalf } from "lucide-react";
+import { Star } from "lucide-react";
 import Link from "next/link";
+import { Product } from "@/types/product";
+
+// TODO: use Product instead of dummy API
 
 export default function ProductCard({ product }: Readonly<{ product: any }>) {
     return (
@@ -17,12 +20,6 @@ export default function ProductCard({ product }: Readonly<{ product: any }>) {
                         <Star fill="#EAB305" strokeWidth={0} />{product.rating}
                     </div>
                 </div>
-            <button
-                className="w-full mt-10 text-custom-900 btn border border-custom-900 hover:bg-custom-900 hover:text-white focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20"
-                ><ShoppingCart className="inline-block size-4 leading-none mr-2" /><span className="align-middle">
-                    Add to cart
-                </span>
-            </button>
             </Link>
         </div>
     )
