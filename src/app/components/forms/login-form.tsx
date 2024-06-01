@@ -18,7 +18,7 @@ export default function LoginForm() {
     const handleSubmit = async (event: any) => {
         event.preventDefault();
         try {
-            const response = await fetch('http://localhost:8000/api/token/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/token/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -33,7 +33,7 @@ export default function LoginForm() {
                 const data = await response.json();
                 console.log("Login successful!", data);
                 const tokenClaims = jwtDecode<JwtPayload>(data.access);
-                
+
                 login(tokenClaims.user_id, formData.username, data.role, data.access, data.refresh);
                 router.push('/');
             } else {
@@ -67,7 +67,7 @@ export default function LoginForm() {
                 <label htmlFor="password" className="block mb-2 text-sm font-medium text-custom-900">Your password</label>
                 <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} className="bg-custom-50 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Password" required />
             </div>
-        
+
             <div className="mt-10">
                 <button
                     type="submit"

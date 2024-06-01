@@ -60,7 +60,7 @@ export default function CreateProductForm() {
     const handleSubmit = async (event: any) => {
         event.preventDefault();
         try {
-            const response = await fetch('http://localhost:8000/api/create-product/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/create-product/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -68,7 +68,7 @@ export default function CreateProductForm() {
                 body: JSON.stringify({
                     name: formData.name,
                     category: formData.category,
-                    status: ProductStatus.Active,
+                    status: ProductStatus.ACCEPTED,
                     stock: formData.stock,
                     revenue: formData.revenue,
                     user_id: user.id,
@@ -100,7 +100,6 @@ export default function CreateProductForm() {
         <div className="w-full grid grid-cols-2 justify-items-center">
             <div>
                 <img className="object-contain w-[390px] h-[390px] rounded-lg" src={imageThumbnail} alt="Product image" />
-         
                 <ul className="flex flex-wrap mb-0 gap-x-5" id="dropzone-preview2">
                     {
                         (selectfiles || [])?.map((file: any, index: number) => {
@@ -119,7 +118,7 @@ export default function CreateProductForm() {
                                                 key="delete"
                                                 className="text-danger"
                                                 color="danger"
-                                                startContent={<Trash className="size-4"/>}
+                                                startContent={<Trash className="size-4" />}
                                                 onClick={() => {
                                                     const newImages: any = [...selectfiles];
                                                     newImages.splice(index, 1);
@@ -136,7 +135,6 @@ export default function CreateProductForm() {
                                             </DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
-
                                 </li>
                             );
                         })

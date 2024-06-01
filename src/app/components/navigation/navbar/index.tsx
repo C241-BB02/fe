@@ -2,11 +2,11 @@
 
 import React from "react";
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, DropdownItem, DropdownTrigger, Dropdown, DropdownMenu, Avatar, Divider, DropdownSection, User } from "@nextui-org/react";
-import { UserRole, useAuth } from "@/context/AuthContext";
+import { UserRole, useAuth, isGuest } from "@/context/AuthContext";
 
 export default function BBNavbar() {
   const { user, logout } = useAuth();
-  const profileUrlBase = "https://avatar.iran.liara.run/username?username="
+  const profileUrlBase = "https://avatar.iran.liara.run/username?username=";
 
   return (
     <Navbar className="bg-custom-100" maxWidth="xl">
@@ -15,7 +15,7 @@ export default function BBNavbar() {
       </NavbarBrand>
 
       <NavbarContent justify="end" className="text-custom-900">
-        {user.role == UserRole.Guest &&
+        {isGuest(user) && (
           <>
             <NavbarItem className="hidden lg:flex">
               <Link href="/login">Login</Link>
@@ -31,14 +31,14 @@ export default function BBNavbar() {
               </Link>
             </NavbarItem>
           </>
-        }
-        {user.role !== UserRole.Guest &&
+        )}
+        {!isGuest(user) && (
           <>
-            {user.role == UserRole.Seller && 
+            {user?.role === UserRole.Seller && (
               <NavbarItem className="hidden md:flex">
                 <Link href="/my-listings">My Listings</Link>
               </NavbarItem>
-            }
+            )}
             <Dropdown placement="bottom-end">
               <DropdownTrigger>
                 <Avatar
@@ -46,9 +46,9 @@ export default function BBNavbar() {
                   as="button"
                   className="transition-transform"
                   color="default"
-                  name="Jason Hughes"
+                  name={user?.username}
                   size="sm"
-                  src={profileUrlBase+user.username}
+                  src={profileUrlBase + user?.username}
                 />
               </DropdownTrigger>
               <DropdownMenu aria-label="Profile Actions" variant="flat">
@@ -59,15 +59,15 @@ export default function BBNavbar() {
                     className="h-14 gap-2 opacity-100"
                   >
                     <User
-                      name={user.username}
-                      description={user.role}
+                      name={user?.username}
+                      description={user?.role}
                       classNames={{
                         name: "text-default-600",
                         description: "text-default-500",
                       }}
                       avatarProps={{
                         size: "sm",
-                        src: profileUrlBase+user.username,
+                        src: profileUrlBase + user?.username,
                       }}
                     />
                   </DropdownItem>
@@ -78,7 +78,7 @@ export default function BBNavbar() {
               </DropdownMenu>
             </Dropdown>
           </>
-        }
+        )}
       </NavbarContent>
     </Navbar>
   );

@@ -4,12 +4,12 @@ import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface JwtPayload {
-  exp: number,
-  iat: number,
-  jti: string,
-  role: string,
-  token_type: string,
-  user_id: number
+  exp: number;
+  iat: number;
+  jti: string;
+  role: string;
+  token_type: string;
+  user_id: number;
 }
 
 interface UserData {
@@ -20,7 +20,6 @@ interface UserData {
   refreshToken: string;
 }
 
-// TODO: use enum for user role
 export enum UserRole {
   Admin = "ADMIN",
   Seller = "SELLER",
@@ -39,7 +38,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<UserData | null>(null);
   const router = useRouter();
- 
+
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -72,4 +71,8 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+export const isGuest = (user: UserData | null) => {
+  return user?.role === UserRole.Guest;
 };
