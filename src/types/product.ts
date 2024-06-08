@@ -6,9 +6,10 @@ export interface Product {
     category: string;
     status: ProductStatus;
     stock: number;
-    revenue: string;
+    price: string;
     user: any;
     photos: any[];
+    description: string;
 }
 
 export interface ProductData {
@@ -28,7 +29,8 @@ export interface ProductData {
     category: string;
     status: keyof typeof ProductStatus;
     stock: number;
-    revenue: number;
+    price: number;
+    description: string;
   }
 
 export enum ProductStatus {
@@ -37,8 +39,12 @@ export enum ProductStatus {
     INREVIEW = "In Review",
 }
 
-export const toPrice = (price: number) => {
-    return 
+export const toPriceString = (price: number) => {
+    return `Rp${price.toLocaleString().replace(",", ".")}`
+};
+
+export const toPriceNumber = (price: string) => {
+    return parseInt(price.replace(".", ""))
 };
 
 export const toProduct = (productData: ProductData) => {
@@ -50,6 +56,7 @@ export const toProduct = (productData: ProductData) => {
         category: productData.category,
         status: ProductStatus[productData.status],
         stock: productData.stock,
-        revenue: `Rp${productData.revenue.toLocaleString().replace(",", ".")}`
+        price: toPriceString(productData.price),
+        description: productData.description
       };
 };
