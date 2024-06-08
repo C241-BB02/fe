@@ -1,35 +1,47 @@
 'use client';
 
 import { useAuth } from "@/context/AuthContext";
-import { ProductStatus } from "@/types/product";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
-import { Trash, UploadCloud, X } from "lucide-react";
+import { Trash, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Dropzone from "react-dropzone";
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
-const MAX_IMAGES = 5
+const MAX_IMAGES = 5;
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
-export default function CreateProductForm() {
+const CreateProductForm = () => {
     const router = useRouter();
     const { user } = useAuth();
-    const [fileLimit, setFileLimit] = useState(false)
-
-    const [selectfiles, setSelectfiles] = useState([]);
+    const [fileLimit, setFileLimit] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [selectfiles, setSelectfiles] = useState<any[]>([]);
     const [imageThumbnail, setImageThumbnail] = useState('/assets/images/placeholder.jpg');
 
     const handleAcceptfiles = (submitted: any) => {
-        let files: any = selectfiles.concat(submitted).slice(0, MAX_IMAGES)
-        files?.map((file: any) => {
-            return Object.assign(file, {
-                priview: URL.createObjectURL(file),
-                formattedSize: formatBytes(file.size),
-            });
+        setErrorMessage('');
+        let files: any = selectfiles.concat(submitted).slice(0, MAX_IMAGES);
+        let validFiles = files.filter((file: any) => {
+            if (file.size > MAX_FILE_SIZE) {
+                setErrorMessage(`File ${file.name} exceeds the 2 MB limit and was not added.`);
+                return false;
+            }
+            return true;
         });
-        setSelectfiles(files);
-        setFileLimit(files.length == MAX_IMAGES)
-        if (files.length > 0) {
-            setImageThumbnail(files[0].priview);
+
+        validFiles?.map((file: any) => {
+            return Object.assign(file, {
+                photo: file,
+                preview: URL.createObjectURL(file),
+            })
+        });
+
+        setSelectfiles(validFiles);
+        setFileLimit(validFiles.length === MAX_IMAGES);
+        if (validFiles.length > 0) {
+            setImageThumbnail(validFiles[0].preview);
         }
     };
 
@@ -38,139 +50,146 @@ export default function CreateProductForm() {
         'image/jpeg': ['.jpg', '.jpeg']
     };
 
-    const formatBytes = (bytes: any, decimals = 2) => {
-        if (bytes === 0) return "0 Bytes";
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+    const formik = useFormik({
+        initialValues: {
+            name: "",
+            category: "",
+            stock: 0,
+            price: 0.0,
+            description: "",
+        },
+        validationSchema: Yup.object({
+            name: Yup.string().required('This field is required'),
+            category: Yup.string().required('This field is required'),
+            stock: Yup.number().required('This field is required').min(0, 'Must be greater than or equal to 0').max(999, "Must be less than 1000").integer('Please enter a valid quantity'),
+            price: Yup.number().required('This field is required').min(0, 'Must be greater than or equal to 0'),
+            description: Yup.string().required('This field is required'),
+        }),
+        onSubmit: async (values) => {
+            try {
+                const formData = new FormData();
+                formData.append('name', values.name);
+                formData.append('category', values.category);
+                formData.append('stock', values.stock.toString());
+                formData.append('price', values.price.toString());
+                formData.append('description', values.description);
+                formData.append('user_id', user.id.toString());
 
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-    };
+                selectfiles.forEach((file: any) => {
+                    formData.append('photos', file.photo);
+                });
 
-    const [formData, setFormData] = useState({
-        name: "",
-        category: "",
-        status: "",
-        stock: 0,
-        revenue: 0.0,
-        images: []
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/create-product/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${user.accessToken}`,
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Post product successful!", data);
+                    router.push('/my-listings');
+                } else {
+                    console.error("Post product failed.");
+                    console.error(response.json())
+                    // TODO: Handle failure
+                }
+            } catch (error) {
+                console.error("Error adding product:", error);
+            }
+        },
     });
 
-    const handleSubmit = async (event: any) => {
-        event.preventDefault();
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/create-product/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: formData.name,
-                    category: formData.category,
-                    status: ProductStatus.ACCEPTED,
-                    stock: formData.stock,
-                    revenue: formData.revenue,
-                    user_id: user.id,
-                })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Post product successful!", data);
-                router.push('/my-listings');
-            } else {
-                console.error("Post product failed.");
-                // TODO: Handle login failure, display error message, etc.
-            }
-        } catch (error) {
-            console.error("Error adding product:", error);
-        }
-    };
-
-    const handleChange = (event: any) => {
-        const { name, value } = event.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-    };
-
     return (
-        <div className="w-full grid grid-cols-2 justify-items-center">
+        <div className="w-full grid md:grid-cols-2 justify-items-center items-start">
             <div>
-                <img className="object-contain w-[390px] h-[390px] rounded-lg" src={imageThumbnail} alt="Product image" />
+                <img className="object-contain w-[390px] h-[390px] rounded-lg" src={imageThumbnail} alt="Product" />
+                {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>}
                 <ul className="flex flex-wrap mb-0 gap-x-5" id="dropzone-preview2">
                     {
-                        (selectfiles || [])?.map((file: any, index: number) => {
-                            return (
-                                <li className="mt-5" id="dropzone-preview-list2">
-                                    <Dropdown className="!min-w-0 !w-fit">
-                                        <DropdownTrigger>
-                                            <button className="focus:border focus:border-custom-500 flex flex-col justify-center rounded-lg overflow-hidden border"
-                                                onClick={() => setImageThumbnail(file.priview)}
-                                            >
-                                                <img className="object-cover w-[60px] h-[60px]" src={file.priview} alt={file.name} />
-                                            </button>
-                                        </DropdownTrigger>
-                                        <DropdownMenu>
-                                            <DropdownItem
-                                                key="delete"
-                                                className="text-danger"
-                                                color="danger"
-                                                startContent={<Trash className="size-4" />}
-                                                onClick={() => {
-                                                    const newImages: any = [...selectfiles];
-                                                    newImages.splice(index, 1);
-                                                    setSelectfiles(newImages);
-                                                    if (newImages.length > 0) {
-                                                        setImageThumbnail(newImages[0].priview);
-                                                    } else {
-                                                        setImageThumbnail('/assets/images/placeholder.jpg');
-                                                    }
-                                                    setFileLimit(false)
-                                                }}
-                                            >
-                                                Delete
-                                            </DropdownItem>
-                                        </DropdownMenu>
-                                    </Dropdown>
-                                </li>
-                            );
-                        })
+                        (selectfiles || []).map((file: any, index: number) => (
+                            <li key={index} className="mt-5" id="dropzone-preview-list2">
+                                <Dropdown className="!min-w-0 !w-fit">
+                                    <DropdownTrigger>
+                                        <button className="focus:border focus:border-custom-500 flex flex-col justify-center rounded-lg overflow-hidden border"
+                                            onClick={() => setImageThumbnail(file.preview)}
+                                        >
+                                            <img className="object-cover w-[60px] h-[60px]" src={file.preview} alt={file.name} />
+                                        </button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu>
+                                        <DropdownItem
+                                            key="delete"
+                                            className="text-danger"
+                                            color="danger"
+                                            startContent={<Trash className="size-4" />}
+                                            onClick={() => {
+                                                const newImages: any = [...selectfiles];
+                                                newImages.splice(index, 1);
+                                                setSelectfiles(newImages);
+                                                if (newImages.length > 0) {
+                                                    setImageThumbnail(newImages[0].preview);
+                                                } else {
+                                                    setImageThumbnail('/assets/images/placeholder.jpg');
+                                                }
+                                                setFileLimit(false);
+                                            }}
+                                        >
+                                            Delete
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </li>
+                        ))
                     }
                 </ul>
             </div>
             <form
-                className="mt-10"
                 id="signInForm"
-                onSubmit={handleSubmit}
+                onSubmit={formik.handleSubmit}
             >
                 <div className="mb-3">
                     <label htmlFor="name" className="block mb-2 text-sm font-medium text-custom-900">Product title</label>
-                    <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} className="bg-white border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Product title" required />
+                    <input type="text" id="name" name="name" value={formik.values.name} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`bg-white border text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${formik.touched.name && formik.errors.name ? 'border-red-500' : 'border-slate-200 mb-8'}`}
+                        placeholder="Product title" required />
+                    {formik.touched.name && formik.errors.name ? <div className="text-red-500 text-sm">{formik.errors.name}</div> : null}
                 </div>
-                <div className="mb-3 flex justify-between w-full">
-                    <div>
+                <div className="mb-3">
+                    <label htmlFor="price" className="block mb-2 text-sm font-medium text-custom-900">Price</label>
+                    <div className={`${formik.touched.price && formik.errors.price ? '' : 'mb-8'}`}>
+                        <div className="flex gap-2 items-center">
+                            <div className="text-sm font-medium text-custom-900">Rp</div>
+                            <input type="number" id="price" name="price" value={formik.values.price} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none bg-white border text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${formik.touched.price && formik.errors.price ? 'border-red-500' : 'border-slate-200'}`} placeholder="Product title" required />
+                        </div>
+                        {formik.touched.price && formik.errors.price ? <div className="text-red-500 text-sm">{formik.errors.price}</div> : null}
+                    </div>
+                </div>
+                <div className="mb-3 md:flex md:justify-between w-full">
+                    <div className={`${formik.touched.stock && formik.errors.stock || formik.touched.category && formik.errors.category ? '' : 'mb-5'}`}>
                         <label htmlFor="category" className="block mb-2 text-sm font-medium text-custom-900">Product category</label>
-                        <input type="text" id="category" name="category" value={formData.category} onChange={handleChange} className="bg-white border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Product category" required />
+                        <input type="text" id="category" name="category" value={formik.values.category} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`bg-white border text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${formik.touched.category && formik.errors.category ? 'border-red-500' : 'border-slate-200'}`} placeholder="Product category" required />
+                        {formik.touched.category && formik.errors.category ? <div className="text-red-500 text-sm">{formik.errors.category}</div> : null}
                     </div>
                     <div>
-                        <label htmlFor="stock" className="block mb-2 text-sm font-medium text-custom-900">Stock</label>
-                        <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleChange} className="bg-white border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required />
+                        <label htmlFor="stock" className="block mb-2 mt-2 md:mt-0 text-sm font-medium text-custom-900">Stock</label>
+                        <input type="number" step={1} id="stock" name="stock" value={formik.values.stock} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`bg-white border text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${formik.touched.stock && formik.errors.stock ? 'border-red-500' : 'border-slate-200'}`} required />
+                        {formik.touched.stock && formik.errors.stock ? <div className="text-red-500 text-sm">{formik.errors.stock}</div> : null}
                     </div>
                 </div>
                 <div className="mb-3">
                     <div className="block mb-2 text-sm font-medium text-custom-900">Description</div>
-                    <textarea id="description" name="description" onChange={handleChange} className="bg-white border border-slate-200 text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Enter description" required />
+                    <textarea id="description" name="description" value={formik.values.description} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`bg-white border text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${formik.touched.description && formik.errors.description ? 'border-red-500' : 'border-slate-200 mb-8'}`} placeholder="Enter description" required />
+                    {formik.touched.description && formik.errors.description ? <div className="text-red-500 text-sm">{formik.errors.description}</div> : null}
                 </div>
                 <div className="mb-3">
                     <div className="block mb-2 text-sm font-medium text-custom-900">Product Images</div>
                     <Dropzone
                         accept={accept}
                         disabled={fileLimit}
-                        onDrop={(acceptfiles: any) => {
-                            handleAcceptfiles(acceptfiles);
+                        onDrop={(acceptedFiles: any) => {
+                            handleAcceptfiles(acceptedFiles);
                         }}>
                         {({ getRootProps }: any) => (
                             <div className="flex items-center justify-center bg-white border border-dashed rounded-md cursor-pointer dropzone border-slate-300 dropzone2">
@@ -183,7 +202,6 @@ export default function CreateProductForm() {
                             </div>
                         )}
                     </Dropzone>
-
                 </div>
 
                 <div className="mt-10 flex justify-end">
@@ -196,5 +214,7 @@ export default function CreateProductForm() {
                 </div>
             </form>
         </div>
-    )
-}
+    );
+};
+
+export default CreateProductForm;
