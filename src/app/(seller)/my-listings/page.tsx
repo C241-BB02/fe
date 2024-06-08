@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Page() {
     const [products, setProducts] = useState<Product[]>([]);
     const { user } = useAuth()
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -80,7 +80,6 @@ export default function Page() {
 
     const renderCell = React.useCallback((product: Product, columnKey: Key) => {
         const cellValue = product[columnKey as keyof Product];
-
         switch (columnKey) {
             case "photos":
                 return (
@@ -117,7 +116,7 @@ export default function Page() {
             case "revenue":
                 return (
                     <div className="text-base">
-                        {product.revenue}
+                        {product.price}
                     </div>
                 );
             case "actions":
@@ -132,7 +131,7 @@ export default function Page() {
                                     key="edit"
                                     startContent={<PencilIcon className="size-4" />}
                                     onClick={() => {
-                                        // route ke edit
+                                        router.push(`/edit-product/${product.code}`)
                                     }}
                                 >
                                     Edit
