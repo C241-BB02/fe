@@ -4,7 +4,7 @@ import RegisterForm from '@/app/components/forms/register-form';
 
 export default function Register() {
     return (
-        <div className="relative h-screen bg-custom-100 flex justify-center items-center">
+        <div className="relative h-screen bg-gradient-to-b from-custom-100 from-80% to-custom-200 flex justify-center items-center">
             <div className="lg:mx-auto my-auto lg:w-[500px] card border-none rounded-lg shadow-slate-100 relative">
                 <div className="!px-10 !pb-12 card-body">
                     <Link href="/">

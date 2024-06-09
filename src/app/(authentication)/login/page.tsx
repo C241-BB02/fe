@@ -4,7 +4,7 @@ import LoginForm from '@/app/components/forms/login-form';
 
 export default function Login() {
     return (
-        <div className="relative h-screen bg-custom-100 md:pb-20 lg:pb-28 flex items-center justify-center">
+        <div className="relative h-screen bg-gradient-to-b from-custom-100 from-80% to-custom-200 md:pb-20 lg:pb-28 flex items-center justify-center">
             <div className="lg:mx-auto my-auto lg:w-[500px] card border-none rounded-lg shadow-slate-100 relative">
                 <div className="!px-10 !py-12 card-body">
                     <Link href="/">

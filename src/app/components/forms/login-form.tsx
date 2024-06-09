@@ -4,74 +4,127 @@ import { JwtPayload, useAuth } from "@/context/AuthContext";
 import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { useState } from "react";
+import { capitalizeFirstLetter } from "./register-form";
+
+const validationSchema = Yup.object({
+    username: Yup.string().required("Username is required"),
+    password: Yup.string().required("Password is required")
+});
 
 export default function LoginForm() {
     const router = useRouter();
     const { login } = useAuth();
+    const [backendErrors, setBackendErrors] = useState<any>({});
+    const [generalError, setGeneralError] = useState("");
 
-    const [formData, setFormData] = useState({
-        username: "",
-        password: ""
-    });
+    const formik = useFormik({
+        initialValues: {
+            username: "",
+            password: ""
+        },
+        validationSchema,
+        onSubmit: async (values, { setSubmitting, setErrors }) => {
+            setBackendErrors({});
+            setGeneralError(""); 
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/token/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: values.username,
+                        password: values.password
+                    })
+                });
 
-    const handleSubmit = async (event: any) => {
-        event.preventDefault();
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/token/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: formData.username,
-                    password: formData.password
-                })
-            });
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Login successful!", data);
+                    const tokenClaims = jwtDecode<JwtPayload>(data.access);
 
-            if (response.ok) {
-                const data = await response.json();
-                console.log("Login successful!", data);
-                const tokenClaims = jwtDecode<JwtPayload>(data.access);
-
-                login(tokenClaims.user_id, formData.username, data.role, data.access, data.refresh);
-                router.push('/');
-            } else {
-                console.error("Login failed.");
-                // Handle login failure, display error message, etc.
+                    login(tokenClaims.user_id, values.username, data.role, data.access, data.refresh);
+                    router.push('/');
+                } else {
+                    const errorData = await response.json();
+                    if (response.status === 400) {
+                        setBackendErrors(errorData);
+                        setErrors(
+                            Object.keys(errorData).reduce((acc: any, key) => {
+                                acc[key] = capitalizeFirstLetter(errorData[key][0]);
+                                return acc;
+                            }, {})
+                        );
+                    } else if (response.status === 401) {
+                        setGeneralError("Invalid username or password");
+                    }
+                }
+            } catch (error) {
+                console.error("Error logging in:", error);
+                setGeneralError("An unexpected error occurred. Please try again.");
+            } finally {
+                setSubmitting(false);
             }
-        } catch (error) {
-            console.error("Error logging in:", error);
         }
-    };
-
-    const handleChange = (event: any) => {
-        const { name, value } = event.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-    };
+    });
 
     return (
         <form
-            className="mt-10"
             id="signInForm"
-            onSubmit={handleSubmit}
+            onSubmit={formik.handleSubmit}
         >
-            <div className="mb-3">
+            {generalError && (
+                <div className="mt-4 text-center w-full rounded-lg bg-red-100 py-2 align-middle text-red-500 border border-red-200 text-sm mt-2">{generalError}</div>
+            )}
+            <div className="mb-3 mt-10">
                 <label htmlFor="username" className="block mb-2 text-sm font-medium text-custom-900">Your username</label>
-                <input type="text" id="username" name="username" value={formData.username} onChange={handleChange} className="bg-custom-50 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Username" required />
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={formik.values.username}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="bg-custom-50 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Username"
+                    required
+                />
+                {formik.touched.username && formik.errors.username && (
+                    <div className="text-red-500 text-sm">{formik.errors.username}</div>
+                )}
+                {backendErrors.username && (
+                    <div className="text-red-500 text-sm">{capitalizeFirstLetter(backendErrors.username[0])}</div>
+                )}
             </div>
             <div className="mb-3">
                 <label htmlFor="password" className="block mb-2 text-sm font-medium text-custom-900">Your password</label>
-                <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} className="bg-custom-50 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Password" required />
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={formik.values.password}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="bg-custom-50 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                    placeholder="Password"
+                    required
+                />
+                {formik.touched.password && formik.errors.password && (
+                    <div className="text-red-500 text-sm">{formik.errors.password}</div>
+                )}
+                {backendErrors.password && (
+                    <div className="text-red-500 text-sm">{capitalizeFirstLetter(backendErrors.password[0])}</div>
+                )}
             </div>
 
             <div className="mt-10">
                 <button
                     type="submit"
                     className="w-full text-white btn bg-custom-800 border-custom-800 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100 dark:ring-custom-400/20"
+                    disabled={formik.isSubmitting}
                 >
                     Log me in!
                 </button>
