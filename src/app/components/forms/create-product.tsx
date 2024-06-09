@@ -101,12 +101,13 @@ const CreateProductForm = () => {
                     console.log("Post product successful!", data);
                     router.push('/my-listings');
                 } else {
-                    console.error("Post product failed.");
-                    console.error(response.json())
-                    // TODO: Handle failure
+                    const errorData = await response.json();
+                    console.error("Post product failed:", errorData);
+                    toast.error(`Error: ${errorData.message || 'Failed to add product'}`);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Error adding product:", error);
+                toast.error(`Error: ${error.message || 'Failed to add product'}`);
             }
         },
     });

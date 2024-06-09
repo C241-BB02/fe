@@ -137,13 +137,12 @@ const EditProductForm = ({ productId }: { productId: string }) => {
                 formData.append('price', values.price.toString());
                 formData.append('description', values.description);
                 formData.append('user_id', user.id.toString());
-                console.log(selectfiles)
+            
                 selectfiles.forEach((file: any) => {
                     if (file.photo) {
                         formData.append('photos', file.photo);
                     }
                 });
-                console.log(formData)
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/product/update/${productId}/`, {
                     method: 'PATCH',
                     headers: {
@@ -157,12 +156,13 @@ const EditProductForm = ({ productId }: { productId: string }) => {
                     console.log("Update product successful!", data);
                     router.push('/my-listings');
                 } else {
-                    console.error("Update product failed.");
-                    console.error(await response.json());
-                    // TODO: Handle failure
+                    const errorData = await response.json();
+                    console.error("Post product failed:", errorData);
+                    toast.error(`Error: ${errorData.message || 'Failed to add product'}`);
                 }
-            } catch (error) {
-                console.error("Error updating product:", error);
+            } catch (error: any) {
+                console.error("Error adding product:", error);
+                toast.error(`Error: ${error.message || 'Failed to add product'}`);
             }
         },
     });
