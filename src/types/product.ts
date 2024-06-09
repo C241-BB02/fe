@@ -40,11 +40,11 @@ export enum ProductStatus {
 }
 
 export const toPriceString = (price: number) => {
-    return `Rp${price.toLocaleString().replace(",", ".")}`
+    return `Rp${price.toLocaleString('id-ID')}`;
 };
 
 export const toPriceNumber = (price: string) => {
-    return parseInt(price.replace(".", ""))
+    return parseFloat(price.replace(/[^\d,-]/g, '').replace(',', '.'))
 };
 
 export const toProduct = (productData: ProductData) => {

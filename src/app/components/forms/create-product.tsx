@@ -155,7 +155,8 @@ const CreateProductForm = () => {
                 </ul>
             </div>
             <form
-                id="signInForm"
+                className="w-4/5"
+                id="addProductForm"
                 onSubmit={formik.handleSubmit}
             >
                 <div className="mb-3">
@@ -174,7 +175,7 @@ const CreateProductForm = () => {
                         {formik.touched.price && formik.errors.price ? <div className="text-red-500 text-sm">{formik.errors.price}</div> : null}
                     </div>
                 </div>
-                <div className="mb-3 md:flex md:justify-between w-full">
+                <div className="mb-3 md:flex md:gap-10 w-full">
                     <div className={`${formik.touched.stock && formik.errors.stock || formik.touched.category && formik.errors.category ? '' : 'mb-5'}`}>
                         <label htmlFor="category" className="block mb-2 text-sm font-medium text-custom-900">Product category</label>
                         <input type="text" id="category" name="category" value={formik.values.category} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`bg-white border text-slate-800 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ${formik.touched.category && formik.errors.category ? 'border-red-500' : 'border-slate-200'}`} placeholder="Product category" required />
