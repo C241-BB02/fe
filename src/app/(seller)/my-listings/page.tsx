@@ -1,6 +1,6 @@
 'use client'
 import React, { Key, useEffect, useState } from "react";
-import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@nextui-org/react";
+import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Popover, PopoverContent, PopoverTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@nextui-org/react";
 import { EllipsisVertical, PencilIcon, Plus, Trash, TriangleAlert } from "lucide-react";
 import { Product, ProductData, ProductStatus, toProduct } from "@/types/product";
 import { useRouter } from "next/navigation";
@@ -101,7 +101,20 @@ export default function Page() {
                     </div>
                 );
             case "status":
-                return (
+                return product.status === ProductStatus.BANNED ? (
+                    <Popover placement="bottom" showArrow={true}>
+                        <PopoverTrigger>
+                            <Chip className="capitalize cursor-pointer" color={statusColorMap[product.status]} size="md" variant="flat">
+                                {cellValue}
+                            </Chip>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <div className="px-2 py-2">
+                                <div className="text-tiny">This product is banned because it has fewer than three non-blurry images.</div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                ) : (
                     <Chip className="capitalize" color={statusColorMap[product.status]} size="md" variant="flat">
                         {cellValue}
                     </Chip>
