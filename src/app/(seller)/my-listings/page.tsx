@@ -1,8 +1,7 @@
 'use client'
-import { Key, useEffect, useState } from "react";
+import React, { Key, useEffect, useState } from "react";
 import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@nextui-org/react";
 import { EllipsisVertical, PencilIcon, Plus, Trash, TriangleAlert } from "lucide-react";
-import React from "react";
 import { Product, ProductData, ProductStatus, toProduct } from "@/types/product";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -84,7 +83,7 @@ export default function Page() {
             case "photos":
                 return (
                     <div className="flex flex-col">
-                        <img className="object-cover w-[60px] h-[60px] rounded" src={product.photos[0].image}></img>
+                        <img className="object-cover w-[60px] h-[60px] rounded" src={product.photos[0].image} alt={product.name}></img>
                     </div>
                 );
             case "name":
@@ -126,7 +125,7 @@ export default function Page() {
                             <DropdownTrigger>
                                 <EllipsisVertical size={18} />
                             </DropdownTrigger>
-                            <DropdownMenu>
+                            <DropdownMenu aria-label="Actions">
                                 <DropdownItem
                                     key="edit"
                                     startContent={<PencilIcon className="size-4" />}

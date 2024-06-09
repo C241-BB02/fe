@@ -8,7 +8,9 @@ import { useState, useEffect } from "react";
 import Dropzone from "react-dropzone";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import toast from "react-hot-toast";
 
+const MIN_IMAGES = 3;
 const MAX_IMAGES = 5;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
@@ -17,9 +19,9 @@ const EditProductForm = ({ productId }: { productId: string }) => {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [fileLimit, setFileLimit] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
     const [selectfiles, setSelectfiles] = useState<any[]>([]);
     const [imageThumbnail, setImageThumbnail] = useState('/assets/images/placeholder.jpg');
+    const [imageError, setImageError] = useState('');
     const [initialValues, setInitialValues] = useState({
         name: "",
         category: "",
@@ -79,10 +81,9 @@ const EditProductForm = ({ productId }: { productId: string }) => {
     }, [productId, user.accessToken]);
 
     const handleAcceptfiles = (submitted: any) => {
-        setErrorMessage('');
         let validFiles = submitted.filter((file: any) => {
             if (file.size > MAX_FILE_SIZE) {
-                setErrorMessage(`File ${file.name} exceeds the 2 MB limit and was not added.`);
+                toast.error(`File ${file.name} exceeds the 2 MB limit and was not added.`)
                 return false;
             }
             return true;
@@ -99,6 +100,9 @@ const EditProductForm = ({ productId }: { productId: string }) => {
         console.log(files)
         setSelectfiles(files);
         setFileLimit(files.length === MAX_IMAGES);
+        if (files.length >= MIN_IMAGES) {
+            setImageError('');
+        }
         if (files.length > 0) {
             setImageThumbnail(files[0].preview);
         }
@@ -115,11 +119,16 @@ const EditProductForm = ({ productId }: { productId: string }) => {
         validationSchema: Yup.object({
             name: Yup.string().required('This field is required'),
             category: Yup.string().required('This field is required'),
-            stock: Yup.number().required('This field is required').min(0, 'Must be greater than or equal to 0').max(999, "Must be less than 1000").integer('Please enter a valid quantity'),
+            stock: Yup.number().required('This field is required').min(0, 'Must be greater than or equal to 0').integer('Please enter a valid quantity').max(999, "Must be less than 1000"),
             price: Yup.number().required('This field is required').min(0, 'Must be greater than or equal to 0'),
             description: Yup.string().required('This field is required'),
         }),
         onSubmit: async (values) => {
+            if (selectfiles.length < MIN_IMAGES) {
+                setImageError('Please upload at least 3 images.');
+                return;
+            }
+
             try {
                 const formData = new FormData();
                 formData.append('name', values.name);
@@ -167,7 +176,6 @@ const EditProductForm = ({ productId }: { productId: string }) => {
             <div className="w-full grid md:grid-cols-2 justify-items-center items-start">
                 <div>
                     <img className="object-contain w-[390px] h-[390px] rounded-lg" src={imageThumbnail} alt="Product" />
-                    {errorMessage && <div className="text-red-500 text-sm">{errorMessage}</div>}
                     <ul className="flex flex-wrap mb-0 gap-x-5" id="dropzone-preview2">
                         {
                             (selectfiles || []).map((file: any, index: number) => (
@@ -180,7 +188,7 @@ const EditProductForm = ({ productId }: { productId: string }) => {
                                                 <img className="object-cover w-[60px] h-[60px]" src={file.preview} alt={file.name} />
                                             </button>
                                         </DropdownTrigger>
-                                        <DropdownMenu>
+                                        <DropdownMenu aria-label="Delete image">
                                             <DropdownItem
                                                 key="delete"
                                                 className="text-danger"
@@ -258,14 +266,15 @@ const EditProductForm = ({ productId }: { productId: string }) => {
                                         <div className="mb-3">
                                             <UploadCloud className={`block size-12 mx-auto ${fileLimit ? 'text-slate-300 fill-slate-100' : 'text-slate-500 fill-slate-200'}`} />
                                         </div>
-                                        <h5 className={`mb-0 font-normal text-sm ${fileLimit ? 'text-slate-300' : 'text-slate-500'}`}>Drag and drop your product images or browse your product images</h5>
+                                        <h5 className={`mb-0 font-normal text-sm ${fileLimit ? 'text-slate-300' : 'text-slate-500'}`}>Upload 3-5 product images</h5>
                                     </div>
                                 </div>
                             )}
                         </Dropzone>
+                        {imageError && <div className="text-red-500 text-sm">{imageError}</div>}
                     </div>
 
-                    <div className="mt-10 flex justify-end">
+                    <div className={`flex justify-end ${imageError ? 'mt-5' : 'mt-10'}`}>
                         <button
                             type="submit"
                             className="!px-6 !py-3 text-white btn bg-custom-800 border-custom-800 hover:text-white hover:bg-custom-600 hover:border-custom-600 focus:text-white focus:bg-custom-600 focus:border-custom-600 focus:ring focus:ring-custom-100 active:text-white active:bg-custom-600 active:border-custom-600 active:ring active:ring-custom-100"

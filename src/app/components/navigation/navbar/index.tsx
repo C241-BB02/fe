@@ -15,7 +15,7 @@ export default function BBNavbar() {
       </NavbarBrand>
 
       <NavbarContent justify="end" className="text-custom-900">
-        {isGuest(user) && (
+        {isGuest(user) ? (
           <>
             <NavbarItem className="hidden lg:flex">
               <Link href="/login">Login</Link>
@@ -31,8 +31,7 @@ export default function BBNavbar() {
               </Link>
             </NavbarItem>
           </>
-        )}
-        {!isGuest(user) && (
+        ) : (
           <>
             {user?.role === UserRole.Seller && (
               <NavbarItem className="hidden md:flex">

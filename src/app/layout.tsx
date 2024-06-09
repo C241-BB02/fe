@@ -3,6 +3,7 @@ import { Rubik } from "next/font/google";
 import "./globals.css";
 import BBNavbar from "./components/navigation/navbar";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 const rubik = Rubik({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
             <div className="w-screen">
               <BBNavbar/>
             </div>
+            <Toaster position="bottom-left" />
             {children}
           </div>
         </AuthProvider>
