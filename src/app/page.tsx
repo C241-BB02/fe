@@ -40,7 +40,7 @@ export default function Page() {
                         <Hero />
                     }
                     <div className="bg-slate-100 md:px-24 px-8 min-h-screen">
-                        <div className="text-lg py-8">Products for You</div>
+                    <div className="text-lg font-medium text-custom-900 py-8">Products for You</div>
                         <div className="grid xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 gap-6 pb-6">
                             {products.map((product) => (
                                 <ProductCard key={product.code} productData={product} />
