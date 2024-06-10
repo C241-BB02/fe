@@ -153,7 +153,7 @@ export default function Page() {
                                     className="text-danger"
                                     color="danger"
                                     startContent={<Trash className="size-4" />}
-                                    onClick={() => {handleDeleteClick(product)}}
+                                    onClick={() => { handleDeleteClick(product) }}
                                 >
                                     Delete
                                 </DropdownItem>
@@ -169,42 +169,36 @@ export default function Page() {
     return (
         <>
             <div className="min-h-screen bg-slate-100 md:px-24 px-8">
-                {isLoading ? (
-                    <div className="h-screen flex items-center justify-center">
-                        <Spinner />
+                <div>
+                    <div className="flex justify-between items-center gap-4 pb-4">
+                        <div className="text-lg font-medium text-custom-900 py-8">Your Listings</div>
+                        <Link
+                            href="/add-product"
+                            className="bg-custom-600 text-white px-3 py-2 rounded rounded-xl hover:bg-custom-900  focus:ring focus:ring-custom-100 active:bg-custom-900 active:border-custom-900 active:ring active:ring-custom-100 dark:ring-custom-400/20"
+                        >
+                            <Plus className="inline-block size-4 leading-none mr-2" />
+                            <span className="align-middle pr-1">Add Product</span>
+                        </Link>
                     </div>
-                ) : (
-                    <div>
-                        <div className="flex justify-between items-center gap-4 pb-4">
-                            <div className="text-lg font-medium text-custom-900 py-8">Your Listings</div>
-                            <Link
-                                href="/add-product"
-                                className="bg-custom-600 text-white px-3 py-2 rounded rounded-xl hover:bg-custom-900  focus:ring focus:ring-custom-100 active:bg-custom-900 active:border-custom-900 active:ring active:ring-custom-100 dark:ring-custom-400/20"
-                            >
-                                <Plus className="inline-block size-4 leading-none mr-2" />
-                                <span className="align-middle pr-1">Add Product</span>
-                            </Link>
-                        </div>
-                        <Table selectionMode="single" aria-label="Listings table">
-                            <TableHeader columns={columns}>
-                                {(column) => (
-                                    <TableColumn key={column.uid} align={column.uid === "photos" ? "center" : "start"}>
-                                        {column.name}
-                                    </TableColumn>
-                                )}
-                            </TableHeader>
-                            <TableBody items={products} emptyContent={"No rows to display."}>
-                                {(item) => (
-                                    <TableRow key={item.code}>
-                                        {(columnKey) =>
-                                            <TableCell>{renderCell(item, columnKey)}</TableCell>
-                                        }
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-                )}
+                    <Table selectionMode="single" aria-label="Listings table">
+                        <TableHeader columns={columns}>
+                            {(column) => (
+                                <TableColumn key={column.uid} align={column.uid === "photos" ? "center" : "start"}>
+                                    {column.name}
+                                </TableColumn>
+                            )}
+                        </TableHeader>
+                        <TableBody items={products} isLoading={isLoading} loadingContent={<Spinner />} emptyContent={"No rows to display."}>
+                            {(item) => (
+                                <TableRow key={item.code}>
+                                    {(columnKey) =>
+                                        <TableCell>{renderCell(item, columnKey)}</TableCell>
+                                    }
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             <Modal
@@ -227,7 +221,7 @@ export default function Page() {
                                 <Button color="default" variant="flat" onPress={onClose}>
                                     Cancel
                                 </Button>
-                                <Button color="danger" onPress={() => {handleDeleteConfirm(onClose)}}>
+                                <Button color="danger" onPress={() => { handleDeleteConfirm(onClose) }}>
                                     Delete
                                 </Button>
                             </ModalFooter>
