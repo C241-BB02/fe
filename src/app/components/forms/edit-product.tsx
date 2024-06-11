@@ -61,7 +61,6 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
                         };
                     }));
                     setSelectfiles(photoFiles);
-                    console.log(photoFiles)
                     if (data.photos.length > 0) {
                         setImageThumbnail(data.photos[0].image);
                     }

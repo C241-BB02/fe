@@ -31,7 +31,6 @@ export default function AdminTableView() {
           });
           let json = await res.json();
           let products: Product[] = json.map((productData: ProductData) => (toProduct(productData)));
-          console.log(products);
           setIsLoading(false);
           return {
             items: products,

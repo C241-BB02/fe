@@ -62,6 +62,7 @@ export default function NavbarMenu({ session } : {session: SessionData}) {
                     isReadOnly
                     key="profile"
                     className="h-14 gap-2 opacity-100"
+                    textValue="Profile"
                   >
                     <User
                       name={session.username}
