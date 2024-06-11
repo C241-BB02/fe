@@ -1,9 +1,7 @@
 'use client'
-import React, { Key, useEffect, useState } from "react";
-import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Popover, PopoverContent, PopoverTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User, useDisclosure } from "@nextui-org/react";
-import { EllipsisVertical, PencilIcon, Plus, Trash, TriangleAlert } from "lucide-react";
+import React, { Key, useState } from "react";
+import { Chip, Link, Popover, PopoverContent, PopoverTrigger, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, User } from "@nextui-org/react";
 import { Product, ProductData, ProductStatus, toPriceNumber, toProduct } from "@/types/product";
-import { useRouter } from "next/navigation";
 import {useAsyncList} from "@react-stately/data";
 
 export default function AdminTableView() {

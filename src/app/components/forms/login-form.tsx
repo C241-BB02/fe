@@ -1,13 +1,12 @@
-'use client';
+'use client'
 
-import { JwtPayload, useAuth } from "@/context/AuthContext";
-import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import { capitalizeFirstLetter } from "./register-form";
+import { login } from "@/context/actions";
+import { SessionData } from "@/context/AuthContext";
 
 const validationSchema = Yup.object({
     username: Yup.string().required("Username is required"),
@@ -15,8 +14,6 @@ const validationSchema = Yup.object({
 });
 
 export default function LoginForm() {
-    const router = useRouter();
-    const { login } = useAuth();
     const [backendErrors, setBackendErrors] = useState<any>({});
     const [generalError, setGeneralError] = useState("");
 
@@ -42,12 +39,8 @@ export default function LoginForm() {
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
-                    console.log("Login successful!", data);
-                    const tokenClaims = jwtDecode<JwtPayload>(data.access);
-
-                    login(tokenClaims.user_id, values.username, data.role, data.access, data.refresh);
-                    router.push('/');
+                    const data = await response.json() as SessionData;
+                    login(data);
                 } else {
                     const errorData = await response.json();
                     if (response.status === 400) {

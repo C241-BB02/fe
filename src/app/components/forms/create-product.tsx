@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from "@/context/AuthContext";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
 import { Trash, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,14 +8,14 @@ import Dropzone from "react-dropzone";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import toast from "react-hot-toast";
+import { SessionData } from "@/context/AuthContext";
 
 const MIN_IMAGES = 3;
 const MAX_IMAGES = 5;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
-const CreateProductForm = () => {
+const CreateProductForm = ({session} : {session: SessionData}) => {
     const router = useRouter();
-    const { user } = useAuth();
     const [fileLimit, setFileLimit] = useState(false);
     const [selectfiles, setSelectfiles] = useState<any[]>([]);
     const [imageThumbnail, setImageThumbnail] = useState('/assets/images/placeholder.jpg');
@@ -82,7 +81,7 @@ const CreateProductForm = () => {
                 formData.append('stock', values.stock.toString());
                 formData.append('price', values.price.toString());
                 formData.append('description', values.description);
-                formData.append('user_id', user.id.toString());
+                formData.append('user_id', session.id!.toString());
 
                 selectfiles.forEach((file: any) => {
                     formData.append('photos', file.photo);
@@ -91,7 +90,7 @@ const CreateProductForm = () => {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/create-product/`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${user.accessToken}`,
+                        'Authorization': `Bearer ${session.access}`,
                     },
                     body: formData
                 });

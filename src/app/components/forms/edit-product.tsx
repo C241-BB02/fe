@@ -1,22 +1,21 @@
 'use client';
 
-import { useAuth } from "@/context/AuthContext";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner } from "@nextui-org/react";
 import { Trash, UploadCloud } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Dropzone from "react-dropzone";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import toast from "react-hot-toast";
+import { SessionData } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const MIN_IMAGES = 3;
 const MAX_IMAGES = 5;
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
 
-const EditProductForm = ({ productId }: { productId: string }) => {
+const EditProductForm = ({ productId, session }: { productId: string, session: SessionData }) => {
     const router = useRouter();
-    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
     const [fileLimit, setFileLimit] = useState(false);
     const [selectfiles, setSelectfiles] = useState<any[]>([]);
@@ -40,13 +39,13 @@ const EditProductForm = ({ productId }: { productId: string }) => {
         const fetchProduct = async () => {
             try {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/product/${productId}/`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${user.accessToken}`,
-                    },
+                    method: 'GET'
                 });
                 if (response.ok) {
                     const data = await response.json();
+                    if (data.user.id !== session.id) {
+                        router.push("/")
+                    }
                     setInitialValues({
                         name: data.name,
                         category: data.category,
@@ -76,9 +75,8 @@ const EditProductForm = ({ productId }: { productId: string }) => {
                 setIsLoading(false);
             }
         };
-
         fetchProduct();
-    }, [productId, user.accessToken]);
+    }, [productId, session.access]);
 
     const handleAcceptfiles = (submitted: any) => {
         let validFiles = submitted.filter((file: any) => {
@@ -136,17 +134,19 @@ const EditProductForm = ({ productId }: { productId: string }) => {
                 formData.append('stock', values.stock.toString());
                 formData.append('price', values.price.toString());
                 formData.append('description', values.description);
-                formData.append('user_id', user.id.toString());
+                formData.append('user_id', session.id!.toString());
             
                 selectfiles.forEach((file: any) => {
                     if (file.photo) {
                         formData.append('photos', file.photo);
                     }
                 });
+
+                console.log(session.access)
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/product/update/${productId}/`, {
                     method: 'PATCH',
                     headers: {
-                        'Authorization': `Bearer ${user.accessToken}`,
+                        'Authorization': `Bearer ${session.access}`,
                     },
                     body: formData
                 });
@@ -161,8 +161,8 @@ const EditProductForm = ({ productId }: { productId: string }) => {
                     toast.error(`Error: ${errorData.message || 'Failed to add product'}`);
                 }
             } catch (error: any) {
-                console.error("Error adding product:", error);
                 toast.error(`Error: ${error.message || 'Failed to add product'}`);
+                console.log(error.message);
             }
         },
     });
