@@ -56,7 +56,7 @@ export default function NavbarMenu({ session } : {session: SessionData}) {
                   src={profileUrlBase + session.username}
                 />
               </DropdownTrigger>
-              <DropdownMenu aria-label="Profile Actions" variant="flat">
+              <DropdownMenu aria-label="Profile Actions" variant="flat" disabledKeys={["profile"]}>
                 <DropdownSection showDivider>
                   <DropdownItem
                     isReadOnly
@@ -71,6 +71,7 @@ export default function NavbarMenu({ session } : {session: SessionData}) {
                         name: "text-default-600",
                         description: "text-default-500",
                       }}
+                      
                       avatarProps={{
                         size: "sm",
                         src: profileUrlBase + session.username,

@@ -143,8 +143,7 @@ export default function AdminTableView() {
                             <div className="text-lg font-medium text-custom-900 py-8">Product List</div>
                         </div>
                         <Table 
-                            selectionMode="single" 
-                            aria-label="Listings table" 
+                            aria-label="Admin table" 
                             sortDescriptor={list.sortDescriptor} 
                             onSortChange={list.sort} 
                             classNames={{

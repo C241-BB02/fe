@@ -180,7 +180,7 @@ const MyListingsTable = ({ products: initialProducts }: { products: Product[]}) 
               <span className="align-middle pr-1">Add Product</span>
             </Link>
           </div>
-          <Table selectionMode="single" aria-label="Listings table">
+          <Table aria-label="Listings table">
             <TableHeader columns={columns}>
               {(column) => (
                 <TableColumn key={column.uid} align={column.uid === "photos" ? "center" : "start"}>
