@@ -1,6 +1,6 @@
 'use client';
 
-import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner } from "@nextui-org/react";
+import { Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Spinner } from "@nextui-org/react";
 import { Trash, UploadCloud } from "lucide-react";
 import { useState, useEffect } from "react";
 import Dropzone from "react-dropzone";
@@ -20,6 +20,7 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
     const [fileLimit, setFileLimit] = useState(false);
     const [selectfiles, setSelectfiles] = useState<any[]>([]);
     const [imageThumbnail, setImageThumbnail] = useState('/assets/images/placeholder.jpg');
+    const [statusThumbnail, setStatusThumbnail] = useState('');
     const [imageError, setImageError] = useState('');
     const [initialValues, setInitialValues] = useState({
         name: "",
@@ -33,6 +34,14 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
         const response = await fetch(url);
         const blob = await response.blob();
         return new File([blob], filename, { type: mimeType });
+    };
+
+    type ChipColor = "success" | "danger" | "warning" ;
+    const statusColorMap: Record<string, ChipColor> = {
+        ["Normal"]: "success",
+        ["Blur"]: "danger",
+        ["Bokeh"]: "success",
+        ["Unreviewed"]: "warning"
     };
 
     useEffect(() => {
@@ -58,11 +67,13 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
                         return {
                             photo: file,
                             preview: photo.image,
+                            status: photo.status
                         };
                     }));
                     setSelectfiles(photoFiles);
                     if (data.photos.length > 0) {
                         setImageThumbnail(data.photos[0].image);
+                        setStatusThumbnail(data.photos[0].status);
                     }
                     
                 } else {
@@ -90,6 +101,7 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
             return Object.assign(file, {
                 photo: file,
                 preview: URL.createObjectURL(file),
+                status: "Unreviewed"
             });
         });
 
@@ -141,7 +153,6 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
                     }
                 });
 
-                console.log(session.access)
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/product/update/${productId}/`, {
                     method: 'PATCH',
                     headers: {
@@ -150,14 +161,19 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
                     body: formData
                 });
 
+                const data = await response.json();
                 if (response.ok) {
-                    const data = await response.json();
-                    console.log("Update product successful!", data);
-                    router.push('/my-listings');
+                    if (data.status == "ACCEPTED") {
+                        toast.success("Your product is live!");
+                        router.push(`/${session.username}/${data.code}`);
+                    } else {
+                        toast.error("Your product is hidden from users. Review your product images.");
+                        router.replace(`/my-listings/`);
+                        router.refresh();
+                    }
                 } else {
-                    const errorData = await response.json();
-                    console.error("Post product failed:", errorData);
-                    toast.error(`Error: ${errorData.message || 'Failed to add product'}`);
+                    console.error("Post product failed:", data);
+                    toast.error(`Error: ${data.message || 'Failed to add product'}`);
                 }
             } catch (error: any) {
                 toast.error(`Error: ${error.message || 'Failed to add product'}`);
@@ -174,7 +190,16 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
         ) : (
             <div className="w-full grid md:grid-cols-2 justify-items-center items-start">
                 <div>
+                <div className="relative">
                     <img className="object-contain w-[390px] h-[390px] rounded-lg" src={imageThumbnail} alt="Product" />
+                    {statusThumbnail !== "" && <Chip
+                        className="capitalize absolute top-2 right-2" 
+                        color={statusColorMap[statusThumbnail]}
+                        size="md"
+                    >
+                        {statusThumbnail}
+                    </Chip>}
+                </div>
                     <ul className="flex flex-wrap mb-0 gap-x-5" id="dropzone-preview2">
                         {
                             (selectfiles || []).map((file: any, index: number) => (
@@ -182,7 +207,10 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
                                     <Dropdown className="!min-w-0 !w-fit">
                                         <DropdownTrigger>
                                             <button className="focus:border focus:border-custom-500 flex flex-col justify-center rounded-lg overflow-hidden border"
-                                                onClick={() => setImageThumbnail(file.preview)}
+                                                onClick={() => {
+                                                    setImageThumbnail(file.preview);
+                                                    setStatusThumbnail(file.status);
+                                                }}
                                             >
                                                 <img className="object-cover w-[60px] h-[60px]" src={file.preview} alt={file.name} />
                                             </button>
@@ -199,8 +227,10 @@ const EditProductForm = ({ productId, session }: { productId: string, session: S
                                                     setSelectfiles(newImages);
                                                     if (newImages.length > 0) {
                                                         setImageThumbnail(newImages[0].preview);
+                                                        setStatusThumbnail(newImages[0].status);
                                                     } else {
                                                         setImageThumbnail('/assets/images/placeholder.jpg');
+                                                        setStatusThumbnail("");
                                                     }
                                                     setFileLimit(false);
                                                 }}

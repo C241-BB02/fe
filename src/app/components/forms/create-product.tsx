@@ -93,16 +93,21 @@ const CreateProductForm = ({session} : {session: SessionData}) => {
                         'Authorization': `Bearer ${session.access}`,
                     },
                     body: formData
-                });
+                })
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Post product successful!", data);
-                    router.push('/my-listings');
+                    if (data.status == "ACCEPTED") {
+                        toast.success("Your product is live!");
+                        router.push(`/${session.username}/${data.code}`);
+                    } else {
+                        toast.error("Your product is hidden from users. Review your product images.");
+                        router.push(`/my-listings/`);
+                    }
                 } else {
                     const errorData = await response.json();
                     console.error("Post product failed:", errorData);
-                    toast.error(`Error: ${errorData.message || 'Failed to add product'}`);
+                    toast.error(`Error adding product: ${errorData.message || 'Failed to add product'}`);
                 }
             } catch (error: any) {
                 console.error("Error adding product:", error);
